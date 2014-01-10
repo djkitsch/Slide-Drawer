@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>5C4222A8-F80C-43AA-915B-52B08DECF3ED</string>
+	<key>IDESourceControlProjectName</key>
+	<string>Slide Drawer</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>23E1DF93-D497-4CBE-BA50-297DBE948871</key>
+		<string>https://github.com/djkitsch/Slide-Drawer.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>Slide Drawer.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>23E1DF93-D497-4CBE-BA50-297DBE948871</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/djkitsch/Slide-Drawer.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>23E1DF93-D497-4CBE-BA50-297DBE948871</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>23E1DF93-D497-4CBE-BA50-297DBE948871</string>
+			<key>IDESourceControlWCCName</key>
+			<string>Slide-Drawer</string>
+		</dict>
+	</array>
+</dict>
+</plist>

@@ -74,7 +74,10 @@ static char const * const rightPanViewControllerKey = "rightPanViewControllerKey
             // so we must first apply the layer's geometry to the graphics context
             CGContextSaveGState(context);
             // Center the context around the window's anchor point
-            CGContextTranslateCTM(context, [window center].x, [window center].y - statusBarFrame.size.height);
+            if (floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_6_1)
+                CGContextTranslateCTM(context, [window center].x, [window center].y - statusBarFrame.size.height);
+            else
+                CGContextTranslateCTM(context, [window center].x, [window center].y);
             // Apply the window's transform about the anchor point
             CGContextConcatCTM(context, [window transform]);
             // Offset by the portion of the bounds left of and above the anchor point
@@ -179,7 +182,8 @@ static char const * const rightPanViewControllerKey = "rightPanViewControllerKey
 - (void)pushAndDragDrawerViewController:(UIViewController*)viewController andGestureRecognizer:(UIGestureRecognizer*)gestureRecognizer{
     UIImage* image = [self getScreenCapture];
     CGRect frame = self.view.window.bounds;
-    frame.origin.y += [[self class] statusBarFrame].size.height;
+    if (floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_6_1)
+        frame.origin.y += [[self class] statusBarFrame].size.height;
     
     // Make the drawer visible but overlayed with the screen capture
     UIImageView* imageView = [[UIImageView alloc] initWithImage:image];
@@ -191,7 +195,7 @@ static char const * const rightPanViewControllerKey = "rightPanViewControllerKey
     imageView.layer.shadowOpacity = DRAWER_IMAGE_SHADOW_OPACITY;
     imageView.layer.shadowPath = [UIBezierPath bezierPathWithRect:self.view.window.layer.bounds].CGPath;
     [[[UIApplication sharedApplication] keyWindow] addSubview:imageView];
-
+    
     [viewController.view addGestureRecognizer:gestureRecognizer];
     
     viewController.hidesBottomBarWhenPushed = YES;
@@ -212,8 +216,13 @@ static char const * const rightPanViewControllerKey = "rightPanViewControllerKey
     UIImageView* img = (UIImageView*) [[[UIApplication sharedApplication] keyWindow] viewWithTag:DRAWER_IMAGE_TAG];
     BOOL screenImageFound = (img && (id) img != [NSNull null]);
     if(screenImageFound){
+        // on iOS 7, origin is the top - on iOS 6, we account for the status bar
+        float fltTop = 0;
+        if (floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_6_1)
+            fltTop = [[self class] statusBarFrame].size.height;
+
         CGRect frameOfImage = img.frame;
-        frameOfImage.origin = CGPointMake(0, [[self class] statusBarFrame].size.height);
+        frameOfImage.origin = CGPointMake(0, fltTop);
         [UIView animateWithDuration:DRAWER_FULL_ANIMATION_TIME
                          animations:^{
                              img.frame = frameOfImage;
@@ -240,14 +249,20 @@ static char const * const rightPanViewControllerKey = "rightPanViewControllerKey
             case DrawerMovementDirectionUp:
                 frameOfImage.origin.y = (!isDrawerOpen) ? translationInTop.y : (DRAWER_IMAGE_ANCHOR_WIDTH - topView.frame.size.height + translationInTop.y);
                 //Lock to bounds
-                if(frameOfImage.origin.y < DRAWER_IMAGE_ANCHOR_WIDTH - topView.frame.size.height) frameOfImage.origin.y = DRAWER_IMAGE_ANCHOR_WIDTH - topView.frame.size.height;
-                else if(frameOfImage.origin.y > [[self class] statusBarFrame].size.height) frameOfImage.origin.y = [[self class] statusBarFrame].size.height;
+                if(frameOfImage.origin.y < DRAWER_IMAGE_ANCHOR_WIDTH - topView.frame.size.height)
+                    frameOfImage.origin.y = DRAWER_IMAGE_ANCHOR_WIDTH - topView.frame.size.height;
+                else if(frameOfImage.origin.y > [[self class] statusBarFrame].size.height
+                        && floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_6_1)
+                    frameOfImage.origin.y = [[self class] statusBarFrame].size.height;
                 break;
             case DrawerMovementDirectionDown:
                 frameOfImage.origin.y = (!isDrawerOpen) ? translationInTop.y : (topView.frame.size.height - DRAWER_IMAGE_ANCHOR_WIDTH + translationInTop.y);
                 //Lock to bounds
-                if(frameOfImage.origin.y > topView.frame.size.height - DRAWER_IMAGE_ANCHOR_WIDTH) frameOfImage.origin.y = topView.frame.size.height - DRAWER_IMAGE_ANCHOR_WIDTH;
-                else if(frameOfImage.origin.y < [[self class] statusBarFrame].size.height) frameOfImage.origin.y = [[self class] statusBarFrame].size.height;
+                if(frameOfImage.origin.y > topView.frame.size.height - DRAWER_IMAGE_ANCHOR_WIDTH)
+                    frameOfImage.origin.y = topView.frame.size.height - DRAWER_IMAGE_ANCHOR_WIDTH;
+                else if (frameOfImage.origin.y < [[self class] statusBarFrame].size.height
+                         && floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_6_1)
+                    frameOfImage.origin.y = [[self class] statusBarFrame].size.height;
                 break;
             case DrawerMovementDirectionLeft:
                 frameOfImage.origin.x = (!isDrawerOpen) ? translationInTop.x : (DRAWER_IMAGE_ANCHOR_WIDTH - topView.frame.size.width + translationInTop.x);
@@ -268,7 +283,13 @@ static char const * const rightPanViewControllerKey = "rightPanViewControllerKey
         imageView.frame = frameOfImage;
     }else if(gestureRecognizer.state == UIGestureRecognizerStateEnded){
         //finger released, set to appropriate state
-        CGPoint animateTo = CGPointMake(0, [[self class] statusBarFrame].size.height);
+        
+        // on iOS 7, origin is the top - on iOS 6, we account for the status bar
+        float fltTop = 0;
+        if (floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_6_1)
+            fltTop = [[self class] statusBarFrame].size.height;
+        
+        CGPoint animateTo = CGPointMake(0, fltTop);
         if(movementDirection == DrawerMovementDirectionUp){
             if(velocity.y < -DRAWER_IMAGE_VELOCITY_THRESHOLD){
                 animateTo.y = DRAWER_IMAGE_ANCHOR_WIDTH - topView.frame.size.height;
@@ -310,7 +331,7 @@ static char const * const rightPanViewControllerKey = "rightPanViewControllerKey
                              imageView.frame = frameOfImage;
                          }
                          completion:^(BOOL finished){
-                             if(animateTo.x == 0 && animateTo.y == [[self class] statusBarFrame].size.height){
+                             if(animateTo.x == 0 && animateTo.y == fltTop){
                                  [self setDrawerIsOpen:NO];
                                  [self popDrawerViewController];
                              }else{
